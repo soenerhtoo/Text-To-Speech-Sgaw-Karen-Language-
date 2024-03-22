@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech Converter</title>
+    <style>
+         body {
+            font-family: Arial, sans-serif;
+        
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 10px 10px;
+            margin: 10px 0;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        textarea:focus {
+            animation: blink 1s linear infinite alternate;
+        }
+
+        @keyframes blink {
+            from {
+                border-color: #007bff;
+            }
+            to {
+                border-color: transparent;
+            }
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        #error-message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <select id="dropdown">
+            <option value="Mouleme">သုးက့(၇)ကလုၢ်</option>
+            <option value="Tha Hin">ထါမဟ့ၣ်ကလုၢ်</option>
+            <option value="Blay">ထ့ထၣ်ဆွ့ကလုၢ်</option>
+        </select>
+        <textarea id="text-input" rows="4" placeholder="ကွဲးလီၤဒီးပာ်လီၤဟိအီၤဒ်အံၤ(ယ အဲၣ် နၤ)"></textarea>
+        <div class="btn-container">
+            <button id="play-btn" class="btn">🔊ကနၣ်</button>
+            <button id="reset-btn" class="btn">🧽ထူးသံလံာ်မဲာ်ဖျၢၣ်</button>
+        </div>
+        <p id="error-message"></p>
+    </div>
+
+    <script>
+        const categories = {
+            Mouleme: [
+                { text: 'ကီၢ်', audio: 'https://drive.google.com/uc?export=download&id=1S35ZV2pEDRBBpCNwJR9jOZgl9IUJVeK1' },
+                { text: 'သူ', audio: 'https://drive.google.com/uc?export=download&id=1YeU7VUhfMlOge05LKvBhG9GR5JPghnKn' },
+              { text: 'လ့ၤ', audio: 'https://drive.google.com/uc?export=download&id=1Ysy10aGngOVcjX-V474iu3BFBXGYdEyB' },
+              { text: 'ကြၢး', audio: 'https://drive.google.com/uc?export=download&id=1fC-gPnxsa4-kYwnqB07FKqM3vUU0Gb67' },
+              { text: 'ကၠိ', audio: 'https://drive.google.com/uc?export=download&id=1kspSL5R6nhMVXl7PAqNbtLhEK0gdmnb8' },
+               { text: 'ကီၢ်', audio: 'https://drive.google.com/uc?export=download&id=1O6SWlkcdz3-pYtys-0JnY9V0oLqFC0-4' },
+              { text: 'ကူ', audio: 'https://drive.google.com/uc?export=download&id=1usm9e3kYCOmn-9Ihkk7MapzabywomEP_' },
+               { text: 'ကဲ', audio: 'https://drive.google.com/uc?export=download&id=1_2SS5ahR4AT_NBcAPjNB8cqyUkW7hmtj' },
+              { text: 'က့ၢ်', audio: 'https://drive.google.com/uc?export=download&id=1NGlWr6a7SNRl6pQybpVXN54_lB5mdg44' },
+               { text: 'က့ၤ', audio: 'https://drive.google.com/uc?export=download&id=1tl84ReWdyM9NGqsVlxXVuKtuEjUD9Yeq' },
+              { text: 'ချ့', audio: 'https://drive.google.com/uc?export=download&id=1sQ92qRzG36GiowkjIz_AE5Fx7U0YMykB' },
+               { text: 'ခီၣ်', audio: 'https://drive.google.com/uc?export=download&id=1JhLaYEuF6YY3a4HDlinio16HymAZtXcH' },
+              { text: 'ဂီၢ်', audio: 'https://drive.google.com/uc?export=download&id=1-CT2p-3V0kyt_-7OgaWrg3-rStRYGCqE' },
+               { text: 'ဂၤ', audio: 'https://drive.google.com/uc?export=download&id=1E3x2OSiCDKj4Y3aot7RxeB_9iLqQGkh2' },
+              { text: 'ဃၢၤ', audio: 'https://drive.google.com/uc?export=download&id=16eLDka5MEF-o7qDpbZ1IYVI5Sj5uP3zC' },
+               { text: 'ဃၣ်', audio: 'https://drive.google.com/uc?export=download&id=1drQliBvpaYEGAZd489cDf7c4LySxZiKi' },
+              { text: 'စု', audio: 'https://drive.google.com/uc?export=download&id=1Q0VkAGsDA6g4CVMUixCZZWwa01mwG-rE' },
+              { text: 'မိၢ်', audio: 'https://drive.google.com/uc?export=download&id=1TJGBNOtPsC-k6KS3M4oVgreL2SiEpdcI' },
+              { text: 'မုၢ်', audio: 'https://drive.google.com/uc?export=download&id=1z8ZOncA-TK3GJyH96wNjF_jScGYv61eP' },
+              { text: 'ယၤ', audio: 'https://drive.google.com/uc?export=download&id=1Iub4S4rE3wTTTBdtFAwBWz1bMKBfSg7U' },
+              { text: 'ယီၤ', audio: 'https://drive.google.com/uc?export=download&id=1_tgxqoKVkrxqL9MxJUh2_lLbqVbCq-xq' },
+              { text: 'ယ', audio: 'https://drive.google.com/uc?export=download&id=1g_xuG-CNc-R1MPsBDUmuF4zgComxD_t7' },
+              { text: 'မၤ', audio: 'https://drive.google.com/uc?export=download&id=1LtIUQLW6pWqJwng-2Ryh-rEm7yTPr3xk'},
+              { text: 'မ့ၢ်', audio: 'https://drive.google.com/uc?export=download&id=1zsVXlkzuK6QKlukfM5s6cXqi3EQL1Wta' },
+              { text: 'မး', audio: 'https://drive.google.com/uc?export=download&id=1WXZ0RGGRmwH1gxtadMImB0xvFWR2P51V' },
+              { text: 'ဘၣ်', audio: 'https://drive.google.com/uc?export=download&id=1CBpIa8Y0osH9Qap0GpU79tKe_lk4V0CV' },
+              { text: 'ဖိ', audio: 'https://drive.google.com/uc?export=download&id=1hg7zI70QgpqWABm4tgS3UAWH9MPdyowG' },
+              { text: 'ဖး', audio: 'https://drive.google.com/uc?export=download&id=1uireV48fL_iAFUBTKtBdb9FQvyoa2hkn' },
+              { text: 'ပှၤ', audio: 'https://drive.google.com/uc?export=download&id=1Gnxr6F6me4XV6gaT4OuM9ME9vGqWtjjn' },
+              { text: 'ပှၢ်', audio: 'https://drive.google.com/uc?export=download&id=1vhBmxtu9jSRTGVeon56i6g2Tj2kBerO9' },
+              { text: 'ပှဲၤ', audio: 'https://drive.google.com/uc?export=download&id=1-8ibpnR1tLC794HqvZ-vkYoPLWOXRKpo' },
+              { text: 'ပ', audio: 'https://drive.google.com/uc?export=download&id=1g0kySLQ2tHImBXk_eg4jB1v2Vwp7GvV6' },
+              { text: 'နၤ', audio: 'https://drive.google.com/uc?export=download&id=1EdEUrc5feCTxegr17ItOWn7zPlI-nYsl' },
+              { text: 'န့ၣ်', audio: 'https://drive.google.com/uc?export=download&id=1b2DGgT57mdJ27Dcc8Z5oUzhZrPQeM98U' },
+              { text: 'နီၢ်', audio: 'https://drive.google.com/uc?export=download&id=1vMRTPlRlGADbWw6HPO2AbS01VWW4kTZv' },
+               { text: 'ဒ်', audio: 'https://drive.google.com/uc?export=download&id=1mYp4OhyL91Z6QHy-K1IS2swSwItSbxX8' },
+              { text: 'ဒီး', audio: 'https://drive.google.com/uc?export=download&id=17VZZtO0wKuMHlDbG53SbsecpnrSbjLKp' },
+              { text: 'ဒံး', audio: 'https://drive.google.com/uc?export=download&id=1Tx4VA_8iXHU3SiufXmd5uY-VJAQTihKS' },
+              { text: 'ထူၣ်', audio: 'https://drive.google.com/uc?export=download&id=1MNQFbEbY9hruy9h56YR2fnd6yoq52H_S' },
+              { text: 'ထံ', audio: 'https://drive.google.com/uc?export=download&id=1fM4hqpV2LyTRcxU-YxBSfG519HHmjKA_' },
+               { text: 'တၢ်', audio: 'https://drive.google.com/uc?export=download&id=1sJwkJNsaeE09sYaX3KyN8xVnC1qSdv9k' },
+              { text: 'တူၢ်', audio: 'https://drive.google.com/uc?export=download&id=1dgGhAcmHxi-gJ5HI9-HFK7C1S6ka9l-z' },
+              { text: 'တီ', audio: 'https://drive.google.com/uc?export=download&id=12GYQuF3bLkOyWoTjoIK47lo-V8DORCLj' },
+              { text: 'တ', audio: 'https://drive.google.com/uc?export=download&id=18P-NMZh14Hatrju-q1EBtHXmNoyhZ5Fy' },
+              { text: 'ညီ', audio: 'https://drive.google.com/uc?export=download&id=1kU-OWlRHnrEW_bwN0MOgEVFnCUZe9HH4' },
+              { text: 'ညါ', audio: 'https://drive.google.com/uc?export=download&id=1bSDyZlJ7YFMhAbF-PJ0ZRtqWiIGUeGEf' },
+              { text: 'ဆၣ်', audio: 'https://drive.google.com/uc?export=download&id=113g_IUupENHfVTF1cajrRO9xCf4b1hBp' },
+              { text: 'ဆူ', audio: 'https://drive.google.com/uc?export=download&id=1PelsJ2Dpz3s8-ITjBMZSPmAZmK9viAep' },
+              { text: 'ဆီ', audio: 'https://drive.google.com/uc?export=download&id=1l8ieQNm57qRT3ua8060PLWVAhOKlXcLZ' },
+              { text: 'စၢၤ', audio: 'https://drive.google.com/uc?export=download&id=1cvk1ZVjoOHr5CWtArLiaKGyUrf0niuh7' },
+              { text: 'ဒံး', audio: 'https://drive.google.com/uc?export=download&id=1Tx4VA_8iXHU3SiufXmd5uY-VJAQTihKS' },
+              { text: 'ဒီး', audio: 'https://drive.google.com/uc?export=download&id=17VZZtO0wKuMHlDbG53SbsecpnrSbjLKp' },
+              { text: 'ဒ်', audio: 'https://drive.google.com/uc?export=download&id=1mYp4OhyL91Z6QHy-K1IS2swSwItSbxX8' },
+              { text: 'နီၢ်', audio: 'https://drive.google.com/uc?export=download&id=1vMRTPlRlGADbWw6HPO2AbS01VWW4kTZv' },
+               { text: 'န့ၣ်', audio: 'https://drive.google.com/uc?export=download&id=1b2DGgT57mdJ27Dcc8Z5oUzhZrPQeM98U' },
+              { text: 'နၤ', audio: 'https://drive.google.com/uc?export=download&id=1EdEUrc5feCTxegr17ItOWn7zPlI-nYsl' },
+              { text: 'ပ', audio: 'https://drive.google.com/uc?export=download&id=1g0kySLQ2tHImBXk_eg4jB1v2Vwp7GvV6' },
+              { text: 'ပှဲၤ', audio: 'https://drive.google.com/uc?export=download&id=1-8ibpnR1tLC794HqvZ-vkYoPLWOXRKpo' },
+              { text: 'ပှၢ်', audio: 'https://drive.google.com/uc?export=download&id=1vhBmxtu9jSRTGVeon56i6g2Tj2kBerO9' },
+              { text: 'ပှၤ', audio: 'https://drive.google.com/uc?export=download&id=1Gnxr6F6me4XV6gaT4OuM9ME9vGqWtjjn' },
+              { text: 'ဖး', audio: 'https://drive.google.com/uc?export=download&id=1uireV48fL_iAFUBTKtBdb9FQvyoa2hkn' },
+              { text: 'ဖိ', audio: 'https://drive.google.com/uc?export=download&id=1hg7zI70QgpqWABm4tgS3UAWH9MPdyowG' },
+              { text: 'ဘၣ်', audio: 'https://drive.google.com/uc?export=download&id=1CBpIa8Y0osH9Qap0GpU79tKe_lk4V0CV' },
+              { text: 'မး', audio: 'https://drive.google.com/uc?export=download&id=1WXZ0RGGRmwH1gxtadMImB0xvFWR2P51V' },
+              { text: 'မိၢ်', audio: 'https://drive.google.com/uc?export=download&id=1TJGBNOtPsC-k6KS3M4oVgreL2SiEpdcI' },
+              { text: 'မုၢ်', audio: 'https://drive.google.com/uc?export=download&id=1z8ZOncA-TK3GJyH96wNjF_jScGYv61eP' },
+              { text: 'မ့ၢ်', audio: 'https://drive.google.com/uc?export=download&id=1zsVXlkzuK6QKlukfM5s6cXqi3EQL1Wta' },
+              { text: 'မၤ', audio: 'https://drive.google.com/uc?export=download&id=1LtIUQLW6pWqJwng-2Ryh-rEm7yTPr3xk' },
+              { text: 'ယ', audio: 'https://drive.google.com/uc?export=download&id=1g_xuG-CNc-R1MPsBDUmuF4zgComxD_t7' },
+              { text: 'ယီၤ', audio: 'https://drive.google.com/uc?export=download&id=1_tgxqoKVkrxqL9MxJUh2_lLbqVbCq-xq' },
+              { text: 'ယၤ', audio: 'https://drive.google.com/uc?export=download&id=1Iub4S4rE3wTTTBdtFAwBWz1bMKBfSg7U' },
+              { text: 'ရိ', audio: 'https://drive.google.com/uc?export=download&id=1f1guo5Sxu5XIrH_krR6325CHRsDLPh4k' },
+              { text: 'ရၢ', audio: 'https://drive.google.com/uc?export=download&id=1kB-IrzbaR-4qu1wRLcFu3AFCDqNUb6PW' },
+              { text: 'လါ', audio: 'https://drive.google.com/uc?export=download&id=1tWGHs9WFklhepJtipYLMok1-uh11JPRJ' },
+              { text: 'လီၢ်', audio: 'https://drive.google.com/uc?export=download&id=1BBzrPDuW1FgGiVsMaJ14esUJca_h014w' },
+              { text: 'လီၤ', audio: 'https://drive.google.com/uc?export=download&id=14Diwl4aLo5GOlMjQruZVz7_jkNy91Gwv' },
+              { text: 'လဲၤ', audio: 'https://drive.google.com/uc?export=download&id=1Ax9xLnN1lzWAramFhvFuoDStEseOmNyp' },
+              { text: 'လၢ', audio: 'https://drive.google.com/uc?export=download&id=1dROYzYVyP52Ob5XttWvFTnr6tik6bT4C' },
+              { text: 'လံၤ', audio: 'https://drive.google.com/uc?export=download&id=1dKSkvLRS9KtZlaH3R-_0EyNccr0lyYFQ' },
+              { text: 'ဝဲ', audio: 'https://drive.google.com/uc?export=download&id=1VA-86J3_E4dp35D4Nzdrd8t5PWirK1sf' },
+              { text: 'သံ', audio: 'https://drive.google.com/uc?export=download&id=1sK3yc5o5eUptmYi0p_uzvT2puax-Tq0S' },
+              { text: 'သး', audio: 'https://drive.google.com/uc?export=download&id=1wJnMcn2NrEXytrOeud8kkCjtS9f097kE' },
+              { text: 'သိး', audio: 'https://drive.google.com/uc?export=download&id=1w0M6K5pvcSt9DxZ3pUxi12fI-8ddqrik' },
+              { text: 'သူ', audio: 'https://drive.google.com/uc?export=download&id=1jgm-NMcRLISZOfvQG60lzBs2ar8zg9lO' },
+              { text: 'သ့ၣ်', audio: 'https://drive.google.com/uc?export=download&id=1pOq51n1vYlDxp6jjnedOBWSLoNIpfeHQ' },
+              { text: 'ဟ့', audio: 'https://drive.google.com/uc?export=download&id=1xBfs3DZ7ltZHfZ1G3dXPeCQ3tXmf8enP' },
+              { text: 'ဟဲ', audio: 'https://drive.google.com/uc?export=download&id=1dEagioonN98hueHg7zFB-1UP3No5OtRJ' },
+              { text: 'အ', audio: 'https://drive.google.com/uc?export=download&id=1dPNk85m1zLGOFEMYTlDU2AymoT1T8paO' },
+              { text: 'အိ', audio: 'https://drive.google.com/uc?export=download&id=1Z9VsFg_EM7kVm0Yzcd6KC0Yx9oGyzkI6' },
+              { text: 'အိၣ်', audio: 'https://drive.google.com/uc?export=download&id=12EYze49kt3bwxELqzOGLbQWItJp7kz8Q' },
+              { text: 'အီ', audio: 'https://drive.google.com/uc?export=download&id=1OhYkTXaiYwKqIFuRo_lZE7yaigibTr0m' },
+              { text: 'အီၣ်', audio: 'https://drive.google.com/uc?export=download&id=1LzpYV0FThD8IcYsjT8eYdqVIWyv2FSqn' },
+              { text: 'အီၤ', audio: 'https://drive.google.com/uc?export=download&id=1tDepL0FqyOt3ieyZk-8xQi5dfGnOR8D-' },
+              { text: 'အဲၣ်', audio: 'https://drive.google.com/uc?export=download&id=1J4vQewLxU1unNXDy4Vte-4eeEG0p30b7' },
+              { text: 'ဒိၣ်', audio: 'https://drive.google.com/uc?export=download&id=1-o4YI6hZuOllscZGba4T6JOh35mr_ADF' },
+              { text: 'ကး', audio: 'https://drive.google.com/uc?export=download&id=1R9TS3AxSHALJdsKq1Fo712d3B64Ml0dJ' },
+              { text: 'ကျိၣ်', audio: 'https://drive.google.com/uc?export=download&id=1sub_D-ePFckah8Utcu85WHfCuBVkFqDU' },
+              { text: 'ဃု', audio: 'https://drive.google.com/uc?export=download&id=12QnlH4pdTZ6Oi4tBtciK4bRhVpbYvA6S' },
+              { text: 'ကွဲး', audio: 'https://drive.google.com/uc?export=download&id=15kJDhYlZQEMo68H3X359nRqb80R2ETJN' },
+{ text: 'ကွဲၢ်', audio: 'https://drive.google.com/uc?export=download&id=1ZAb48Mr01Jw6fVBYMi9c04fCo1C9jqmu' },
+{ text: 'ကွၢ်', audio: 'https://drive.google.com/uc?export=download&id=1GmGkEFkuQ91KjuN5rj-KQHBoTFwzJ1Fl' },
+{ text: 'ကိး', audio: 'https://drive.google.com/uc?export=download&id=1x56XPkshY-PXJAmJlLrkuUSGJSZizkvM' },
+{ text: 'ကူ', audio: 'https://drive.google.com/uc?export=download&id=13AyHl5AW8Fsk1iDz9O0SFfO28vJHVKfI' },
+{ text: 'ကဲ', audio: 'https://drive.google.com/uc?export=download&id=1ga8lDcmTNPKjOg6FKHsYHq4LBWF9ubLm' },
+{ text: 'ခံ', audio: 'https://drive.google.com/uc?export=download&id=10tlFYTeUByMabNFP3wSBSPLUpeMmUXx5' },
+{ text: 'ခွံ', audio: 'https://drive.google.com/uc?export=download&id=1SfKz6IM52x0qQDSpeLMDIsbd0xC7W1OY' },
+{ text: 'ခူ', audio: 'https://drive.google.com/uc?export=download&id=155Y7Pq0nK6mrfPcHE2HAJXRmWwUefSwS' },
+{ text: 'ခဲ', audio: 'https://drive.google.com/uc?export=download&id=1k97TOYqS5rzZbvc9uKjGBFgHD0mg8q0B' },
+{ text: 'ဂၤ', audio: 'https://drive.google.com/uc?export=download&id=1dXTLtNb1y5JObI6PYASd8q44RNZ7ODNc' },
+{ text: 'ဃိး', audio: 'https://drive.google.com/uc?export=download&id=1zFwneXg2DfnGZ7BY6i0e176qOiRKUva2' },
+{ text: 'ဃိၣ်', audio: 'https://drive.google.com/uc?export=download&id=1dXTnnjiijF9Zsa96PRaUk-j0CbCGWRt0' },
+{ text: 'ဃူ', audio: 'https://drive.google.com/uc?export=download&id=1bzguTbzB-9EvqGpP9D23CaQ2c9FPptB3' },
+{ text: 'စိၤ', audio: 'https://drive.google.com/uc?export=download&id=13K5MU6TXAtgnno1dXKikRPFGTxmNjqVa' },
+{ text: 'စၢ်', audio: 'https://drive.google.com/uc?export=download&id=1YGVbE17X0y2g1Wwp0xnmaHXvowxCkdWR' },
+{ text: 'စၢၤ', audio: 'https://drive.google.com/uc?export=download&id=1yKOT7gHEqy3iZctIbAr3vuvTRAsmc0WB' },
+{ text: 'ဆံ', audio: 'https://drive.google.com/uc?export=download&id=1PnAFSOukE2Eb77eK8Ph2OGjCDV_jChOE' },
+{ text: 'ဆိၣ်', audio: 'https://drive.google.com/uc?export=download&id=1PnAFSOukE2Ehttps:' },
+{ text: 'ဆၢ', audio: 'https://drive.google.com/uc?export=download&id=1_l-jE8wjLiXVJHKFRNzCMnVGLmHcuc0W' },
+{ text: 'ဆ့ၣ်', audio: 'https://drive.google.com/uc?export=download&id=1-w3nWf5a7CfEIDUEzAQhcqPBvHcgXAxw' },
+{ text: 'ညိၣ်', audio: 'https://drive.google.com/uc?export=download&id=1Ak55xASqgM9hRYhiJ5dbhxX0M6GvcyCU' },
+{ text: 'တ', audio: 'https://drive.google.com/uc?export=download&id=1pvOnLboFRerTU-f3l7loUH5jmQsBJT7e' },
+{ text: 'တီၢ်', audio: 'https://drive.google.com/uc?export=download&id=1GoLyHWKRy5Wph_v7yeF8uGXpwQkXshDU' },
+{ text: 'တဲ', audio: 'https://drive.google.com/uc?export=download&id=1XrhGb57roorGLPjKIQjGVRb_mSMbh39a' },
+{ text: 'တၢ', audio: 'https://drive.google.com/uc?export=download&id=1UwmBK9Wh4VUcTbj5S1vEra-U1uJqrHSf' },
+{ text: 'တၢၢ်', audio: 'https://drive.google.com/uc?export=download&id=1l2WZi_NW3cZtzwFy4p153iFyPL3rQieY' },
+{ text: 'ထံး', audio: 'https://drive.google.com/uc?export=download&id=1y6gZN6jEWDv55wRk6TGavMOdsF7Vsi_-' },
+{ text: 'ထိ', audio: 'https://drive.google.com/uc?export=download&id=19AL7ZkhSx903kzLTOntFB5FFIjKt5ar3' },
+{ text: 'ထူ', audio: 'https://drive.google.com/uc?export=download&id=10ztCIMkQaytd8bo4RMcpOQ8UsL40JwKr' },
+{ text: 'ထူး', audio: 'https://drive.google.com/uc?export=download&id=1Num2Sqb_yObWLnQDHnRoqAD4MouqjnLS' },
+{ text: 'ဒီၣ်', audio: 'https://drive.google.com/uc?export=download&id=18Z2unRUAcTwWbMt5aJHkU332gD58KNsW' },
+{ text: 'ဒူ', audio: 'https://drive.google.com/uc?export=download&id=1UxXK3Uz0GL7CTruDSRMPzLwFfHpRnKdG' },
+{ text: 'ဒဲ', audio: 'https://drive.google.com/uc?export=download&id=1hUDX4H0TwP5CjAw4_EZsDHox-FFRHJkq' },
+{ text: 'န', audio: 'https://drive.google.com/uc?export=download&id=1jMswFk4AhmELh0RVcYtz5OyblghlaRzv' },
+{ text: 'နး', audio: 'https://drive.google.com/uc?export=download&id=1gIoy-dFWp1xJA7vwmtkXJdjpTj1_M9Q5' },
+{ text: 'နွံ', audio: 'https://drive.google.com/uc?export=download&id=1ubiRj5zTmicnrXKiKed6bTYLtM3rK_oN' },
+{ text: 'နီၤ', audio: 'https://drive.google.com/uc?export=download&id=1Jcnd04N8Cv3XGh3Xv2XwbVvvp1umYFs1' },
+{ text: 'နူ', audio: 'https://drive.google.com/uc?export=download&id=1viOOhoQzSi2Sm5MRac-Xi3kuCzquwZYY' },
+{ text: 'န့ၢ်', audio: 'https://drive.google.com/uc?export=download&id=12XCIuz3bbWHhfP3AXJwIkCyFzLTUQH0D' },
+{ text: 'နံၤ', audio: 'https://drive.google.com/uc?export=download&id=1JpdSXooUC8kDb8Eiw3KkWhxXKB5HiDcQ' },
+{ text: 'ပှဲၤ', audio: 'https://drive.google.com/uc?export=download&id=1MCTHMsg9ZKIcVmi2wPgOKERficartb3Y' },
+{ text: 'ပှၢ်', audio: 'https://drive.google.com/uc?export=download&id=1UC4xNpWmQxW9pdKtK1eSnaTiSXZlagQl' },
+{ text: 'ပှၤ', audio: 'https://drive.google.com/uc?export=download&id=1fJ5XBo2XvhMhuKwE4Ht2diBtI3vrgTYZ' },
+{ text: 'ပီၤ', audio: 'https://drive.google.com/uc?export=download&id=1x9M7F7IIYSVvnNALk1GuT6TbBXHqKK2G' },
+{ text: 'ဖး', audio: 'https://drive.google.com/uc?export=download&id=1e693Zd09FXXj7vTmMnBvM2MgyY7LzSye' },
+{ text: 'ဖဲ', audio: 'https://drive.google.com/uc?export=download&id=1D5_TuAMMYxmG0W15nLnvRZMXPmL1AcYV' },
+{ text: 'ဘှါ', audio: 'https://drive.google.com/uc?export=download&id=1sZlg9mXyM6E3JNV1sLzIuBYpDhymGkPN' },
+{ text: 'ဘိၣ်', audio: 'https://drive.google.com/uc?export=download&id=1Fmy6Glb4wauksJD3oqj-kmFGgZMs5o69' },
+{ text: 'ဘီ', audio: 'https://drive.google.com/uc?export=download&id=1gBpLMbGGziPmt5E6v8azQsN0EcJOMBk0' },
+{ text: 'ဘူး', audio: 'https://drive.google.com/uc?export=download&id=1AOD463U1eTmOAJR3P8oHDFw_u62Kyirl' },
+{ text: 'မုၢ်', audio: 'https://drive.google.com/uc?export=download&id=1jt7RMUMl_Lo_8DiqUKPtpcfCpAQYdQh8' },
+{ text: 'မ်', audio: 'https://drive.google.com/uc?export=download&id=1Z8GmnhlylmAeoOeQgJXb_8jJE9kPUjoP' },
+{ text: 'ယွၤ', audio: 'https://drive.google.com/uc?export=download&id=1DODEH3P-aFMqPoncSg6e50IGLMl8HKpS' },
+{ text: 'ယုၢ်', audio: 'https://drive.google.com/uc?export=download&id=1sp9HYB7u5I8FUajBiyBAFzv-GDcA1LJ1' },
+{ text: 'ယဲ', audio: 'https://drive.google.com/uc?export=download&id=1D8IpqqdjEpyGt1TqW6IxQlYPuw-fysK0' },
+{ text: 'ယဲၢ်', audio: 'https://drive.google.com/uc?export=download&id=1ZltqRA4Ea1nFaVGyDoNdQRQ5oIru9XLM' },
+{ text: 'ယံၤ', audio: 'https://drive.google.com/uc?export=download&id=1gDL1dVptLxABvA3gtGwc22paiX_ZN4Wc' },
+{ text: 'ရံး', audio: 'https://drive.google.com/uc?export=download&id=18GHkqNsT8N1PmzZTgcw18g5B6BEWAD6j' },
+{ text: 'လွဲၢ်', audio: 'https://drive.google.com/uc?export=download&id=1R2Xbtdh2GHg3xFQLigUtbrVR34mRnj2f' },
+{ text: 'လွံၢ်', audio: 'https://drive.google.com/uc?export=download&id=1g-lnExX2bYd7jDW-A0x3SxXv05DYGV9d' },
+{ text: 'လါ', audio: 'https://drive.google.com/uc?export=download&id=1dPWGEVyXo7M9OiURbn3nzS0Hju7wHMqd' },
+{ text: 'လိၣ်', audio: 'https://drive.google.com/uc?export=download&id=1FMmUc6hVYZXAmNFGQfUfYHc-LtLzVKLQ' },
+{ text: 'လီၢ်', audio: 'https://drive.google.com/file/d/1fHwhuYHV1tbxWmHpTqEO-sMhQpzzehPf/view?usp=drive_link' },
+{ text: 'လၢာ်', audio: 'https://drive.google.com/uc?export=download&id=1SV7VMIUZSMz4eTbUul0gE958a5HE5bYl' },
+{ text: 'လၢ်', audio: 'https://drive.google.com/uc?export=download&id=1NTYvaU1JmxSRYf49HYA5S2rAZFSUbPnC' },
+{ text: 'ဝး', audio: 'https://drive.google.com/uc?export=download&id=1pEbxBAicCiJXcA9v4fzXFhqeXcU_MAlg' },
+{ text: 'ဝါ', audio: 'https://drive.google.com/uc?export=download&id=1kLW4d6IxDu9g0LegZUS94TRHqnMaJsN5' },
+{ text: 'သ', audio: 'https://drive.google.com/uc?export=download&id=1jdvZjoHA7rXikHgC4NVl5Jud35EFVwwG' },
+{ text: 'သး', audio: 'https://drive.google.com/uc?export=download&id=1_AcpC_Ru35ay1B3Z3ePfjXDH0DNvImO-' },
+{ text: 'သိၣ်', audio: 'https://drive.google.com/uc?export=download&id=1_ixHE8Mp2MF7vreCEn2wBL5woSSCVt4N' },
+{ text: 'သီၣ်', audio: 'https://drive.google.com/uc?export=download&id=1cR5Z_iPz1xY6d_5x5MILAX23Ow-e06Tt' },
+{ text: 'သု', audio: 'https://drive.google.com/uc?export=download&id=1-eRKbKUHZ1A-MOf69FmGyXXGvFchGizU' },
+{ text: 'သူ', audio: 'https://drive.google.com/uc?export=download&id=1yZ6y-iaHbydQQ0g1nCJeA1ZRFfxXO-rH' },
+{ text: 'သၢ', audio: 'https://drive.google.com/uc?export=download&id=1SKkHe-rYmxdMj7LyUEGYBGu3f6vEBNsd' },
+{ text: 'ဟး', audio: 'https://drive.google.com/uc?export=download&id=1DD3SWZn3oGJsBHh5-cHghQQigg2L8Pml' },
+{ text: 'ဟီၣ်', audio: 'https://drive.google.com/uc?export=download&id=1pV7GtCL6zQ0EOexr2xP2bsG0CzUb9E19' },
+{ text: 'ဟူ', audio: 'https://drive.google.com/uc?export=download&id=12T8zAEmrbOWP1qAJi4FCykZ3LDbxtiIk' },
+{ text: 'အိၣ်', audio: 'https://drive.google.com/uc?export=download&id=1gf-0ngbbVag11RQSdSFOPyIPshNO9mjS' },
+{ text: 'အဲး', audio: 'https://drive.google.com/uc?export=download&id=1lkqAQAUgnNsacVOG4D5wHsXuICyPQzgg' },
+{ text: 'အံၤ', audio: 'https://drive.google.com/uc?export=download&id=1_w7kHwVbE3I6zos01Ogr0jgHyEMtA8YK' },
+{ text: 'ဧၢ', audio: 'https://drive.google.com/uc?export=download&id=1wiCFQ2ApaT4TSoomTWua_zUDg07iRcGG' },
+
+
+   
+            ],
+            'Tha Hin': [
+                { text: 'Text3', audio: 'tha_hin_text3.mp3' },
+                { text: 'Text4', audio: 'tha_hin_text4.mp3' },
+            ],
+            Blay: [
+                { text: 'Text5', audio: 'blay_text5.mp3' },
+                { text: 'Text6', audio: 'blay_text6.mp3' },
+            ],
+        };
+
+        const dropdown = document.getElementById('dropdown');
+        const textInput = document.getElementById('text-input');
+        const playBtn = document.getElementById('play-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const errorMessage = document.getElementById('error-message');
+        const audioQueue = [];
+
+        playBtn.addEventListener('click', () => {
+            const selectedCategory = dropdown.value;
+            const enteredTexts = textInput.value.trim().split(' '); // Split by space.
+            const categoryData = categories[selectedCategory];
+
+            audioQueue.length = 0; // Clear the previous queue.
+
+            enteredTexts.forEach(enteredText => {
+                const match = categoryData.find(item => item.text === enteredText);
+                if (match) {
+                    audioQueue.push(new Audio(match.audio));
+                }
+            });
+
+            if (audioQueue.length > 0) {
+                playNextAudio();
+                errorMessage.textContent = '';
+            } else {
+                errorMessage.textContent = 'Sorry, none of the entered text exists in the selected category! Choose other words.';
+            }
+        });
+
+        function playNextAudio() {
+            if (audioQueue.length === 0) {
+                return;
+            }
+
+            const audio = audioQueue.shift();
+            audio.play();
+            audio.onended = playNextAudio;
+        }
+
+        resetBtn.addEventListener('click', () => {
+            textInput.value = '';
+            errorMessage.textContent = '';
+            audioQueue.length = 0;
+        });
+    </script>
+</body>
+</html>
